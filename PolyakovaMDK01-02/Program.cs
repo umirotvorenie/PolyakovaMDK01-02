@@ -81,16 +81,9 @@ namespace BinaryNumber
                                 }
                                 else
                                 {
-                                    ulong result3 = number1 / number2;
-                                    string resultNumber3 = DecimalToBinary(result3);
-                                    if (resultNumber3 == "0")
-                                    {
-                                        Console.WriteLine("Число не может быть отрицательным");
-                                    }
-                                    else
-                                    {
-                                        Console.WriteLine($"Результат: {resultNumber3}");
-                                    }
+                                    long result3 = Convert.ToInt64(number1 / number2);
+                                    string resultNumber3 = DecimalToBinaryTwo(result3);
+                                    Console.WriteLine($"Результат: {resultNumber3}");
                                 }
                             }
                         }
@@ -108,7 +101,7 @@ namespace BinaryNumber
                             {
                                 Console.WriteLine("Введите троичное число");
                                 string ternaryNumber6 = Console.ReadLine();
-                                ulong number3 = ConvertToDecimal(ternaryNumber6);
+                                long number3 = ConvertToDecimal(ternaryNumber6);
                                 if (!IsTernaryNumber(ternaryNumber6))
                                 {
                                     Console.WriteLine("Неправильное число");
@@ -119,7 +112,7 @@ namespace BinaryNumber
                                     Console.WriteLine("Введите троичное число");
                                 }
                                 string ternaryNumber2 = Console.ReadLine();
-                                ulong number4 = ConvertToDecimal(ternaryNumber2);
+                                long number4 = ConvertToDecimal(ternaryNumber2);
                                 if (!IsTernaryNumber(ternaryNumber2))
                                 {
                                     Console.WriteLine("Неправильное число");
@@ -132,14 +125,14 @@ namespace BinaryNumber
                                 string operand = Console.ReadLine();
                                 if (operand == "-")
                                 {
-                                    if (number4 > number3)
+                                    //if (number4 > number3)
+                                    //{
+                                    //    Console.WriteLine("Второе число не может быть больше первого");
+                                    //    break;
+                                    //}
+                                    //else
                                     {
-                                        Console.WriteLine("Второе чмсло не может быть больше первого");
-                                        break;
-                                    }
-                                    else
-                                    {
-                                        ulong result = number3 - number4;
+                                        long result = number3 - number4;
                                         string resultNumber = ConvertToTernary(result);
                                         Console.WriteLine($"Результат: {resultNumber}");
                                         break;
@@ -147,14 +140,14 @@ namespace BinaryNumber
                                 }
                                 if (operand == "+")
                                 {
-                                    ulong result1 = number3 + number4;
+                                    long result1 = number3 + number4;
                                     string resultNumber1 = ConvertToTernary(result1);
                                     Console.WriteLine($"Результат: {resultNumber1}");
                                     break;
                                 }
                                 if (operand == "*")
                                 {
-                                    ulong result2 = number3 * number4;
+                                    long result2 = number3 * number4;
                                     string resultNumber2 = ConvertToTernary(result2);
                                     Console.WriteLine($"Результат: {resultNumber2}");
                                     break;
@@ -168,18 +161,10 @@ namespace BinaryNumber
                                     }
                                     else
                                     {
-                                        if (number3 > number4)
-                                        {
-                                            ulong result3 = number3 / number4;
-                                            string resultNumber3 = ConvertToTernary(result3);
-                                            Console.WriteLine($"Результат: {resultNumber3}");
-                                            break;
-                                        }
-                                        else
-                                        {
-                                            Console.WriteLine("Второе число не должно быть больше первого");
-                                            break;
-                                        }
+                                        long result3 = number3 / number4;
+                                        string resultNumber3 = ConvertToTernary(result3);
+                                        Console.WriteLine($"Результат: {resultNumber3}");
+                                        break;
                                     }
                                 }
                             }
@@ -199,28 +184,54 @@ namespace BinaryNumber
 
         private static bool IsTernaryNumber(string input)
         {
-            foreach (char digit in input)
+            if (string.IsNullOrEmpty(input))
             {
+                return false;
+            }
+
+            int startIndex = 0;
+
+            // Проверяем наличие знака минуса и сдвигаем начальный индекс
+            if (input[0] == '-')
+            {
+                if (input.Length == 1)
+                {
+                    return false; // Минус должен сопровождаться цифрами
+                }
+                startIndex = 1;
+            }
+
+            // Проверяем, что оставшаяся часть строки состоит из троичных цифр
+            for (int i = startIndex; i < input.Length; i++)
+            {
+                char digit = input[i];
                 if (digit != '0' && digit != '1' && digit != '2')
                 {
                     return false;
                 }
             }
+
             return true;
         }
 
-        private static ulong ConvertToDecimal(string trojanNumber)
+        private static long ConvertToDecimal(string trojanNumber)
         {
-            ulong result = 0;
-            ulong baseValue = 3;
+            bool isNegative = trojanNumber.StartsWith("-");
+            if (isNegative)
+            {
+                trojanNumber = trojanNumber.Substring(1);
+            }
+
+            long result = 0;
+            long baseValue = 3;
 
             for (int i = 0; i < trojanNumber.Length; i++)
             {
-                ulong digit = ulong.Parse(trojanNumber[i].ToString());
+                long digit = (long)char.GetNumericValue(trojanNumber[i]);
                 result = result * baseValue + digit;
             }
 
-            return result;
+            return isNegative ? -result : result;
         }
 
         private static string DecimalToBinary(ulong decimalNumber)
@@ -242,23 +253,49 @@ namespace BinaryNumber
             return binary;
         }
 
-        private static string ConvertToTernary(ulong decimalNumber)
+        private static string ConvertToTernary(long decimalNumber)
         {
             if (decimalNumber == 0)
             {
                 return "0";
             }
 
+            bool isNegative = decimalNumber < 0;
+            decimalNumber = Math.Abs(decimalNumber);
+
             string trojan = "";
 
-            while (decimalNumber > 0)
+            while (decimalNumber != 0)
             {
-                ulong remainder = decimalNumber % 3;
+                long remainder = decimalNumber % 3;
+                if (remainder < 0)
+                {
+                    remainder += 3; // Adjust for negative remainder
+                }
                 trojan = remainder + trojan;
                 decimalNumber /= 3;
             }
 
-            return trojan;
+            return isNegative ? "-" + trojan : trojan;
+        }
+
+        private static string DecimalToBinaryTwo(long decimalNumber)
+        {
+            if (decimalNumber == 0)
+            {
+                return "0";
+            }
+
+            string binary = "";
+
+            while (decimalNumber > 0)
+            {
+                long remainder = decimalNumber % 2;
+                binary = remainder + binary;
+                decimalNumber /= 2;
+            }
+
+            return binary;
         }
     }
 }
